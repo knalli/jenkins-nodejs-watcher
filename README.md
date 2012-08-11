@@ -37,7 +37,7 @@ _(Coming soon)_
 ## Examples
 
 ```bash
-node bin/jenkins.js -a -R user@mac.example.org -s http://myjenkins.example.org/jenkins -j job1,job2,job3/lastStableBuild
+jenkins-watcher -a -R user@mac.example.org -s http://myjenkins.example.org/jenkins -j job1,job2,job3/lastStableBuild
 ```
 
 _(Coming soon)_
