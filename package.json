@@ -1,5 +1,5 @@
 {
-    "name":"jenkins-nodejs-watcher",
+    "name":"jenkins-watcher",
     "description":"A command line util watching for job result actions of a Jenkins server.",
     "version":"0.1.0",
     "homepage":"https://github.com/knalli/jenkins-nodejs-watcher",
@@ -23,7 +23,7 @@
     "main":"lib/jenkins-lib",
     "preferGlobal":"true",
     "bin":{
-        "jenkins-watcher":"bin/jenkins.js"
+        "jenkins-watcher":"bin/main.js"
     },
     "engines":{
         "node":">= 0.6.0"
