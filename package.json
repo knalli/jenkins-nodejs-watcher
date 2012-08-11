@@ -1,0 +1,43 @@
+{
+    "name":"jenkins-nodejs-watcher",
+    "description":"A command line util watching for job result actions of a Jenkins server.",
+    "version":"0.1.0",
+    "homepage":"https://github.com/knalli/jenkins-nodejs-watcher",
+    "author":{
+        "name":"Jan Philipp",
+        "email":"knallisworld@googlemail.com"
+    },
+    "repository":{
+        "type":"git",
+        "url":"git://github.com/knalli/jenkins-nodejs-watcher.git"
+    },
+    "bugs":{
+        "url":"https://github.com/knalli/jenkins-nodejs-watcher/issues"
+    },
+    "licenses":[
+        {
+            "type":"MIT",
+            "url":"https://github.com/knalli/jenkins-nodejs-watcher/blob/master/LICENSE-MIT"
+        }
+    ],
+    "main":"lib/jenkins-lib",
+    "preferGlobal":"true",
+    "bin":{
+        "jenkins-watcher":"bin/jenkins.js"
+    },
+    "engines":{
+        "node":">= 0.6.0"
+    },
+    "scripts":{
+        "test":"grunt test"
+    },
+    "dependencies":{
+        "grunt":"~0.3.11",
+        "file-utils":"~0.1.10",
+        "q":"~0.8.0"
+    },
+    "devDependencies":{
+        "grunt":"~0.3.11"
+    },
+    "keywords":[]
+}

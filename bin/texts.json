@@ -1,0 +1,20 @@
+{
+    "onServerDown" : [
+        "The build server is currently not available."
+    ],
+    "onServerUp" : [
+        "The build server is ready."
+    ],
+    "onJobRegister" : [
+        "The job %1$s was sucessfully registered. The current build number is %2$s and the result is %3$s."
+    ],
+    "onJobSwitchedToStable" : [
+        "The job %1$s is back to normal and stable again with build %2$s."
+    ],
+    "onJobSwitchedToFailure" : [
+        "The job %1$s just failed with build %2$s."
+    ],
+    "onJobSwitchedToUnstable" : [
+        "The job %1$s switch to unstable with build %2$s."
+    ]
+}
