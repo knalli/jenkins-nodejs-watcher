@@ -3,15 +3,16 @@
 sys = require 'sys'
 {exec} = require 'child_process'
 Q = require 'q'
-JenkinsLib = require '../lib_src/jenkins-lib'
-{JenkinsServer, JenkinsEmitter} = JenkinsLib
+{JenkinsServer, JenkinsEmitter} = require '../lib_src/jenkins-lib'
 {Say} = require '../lib_src/remote-say-lib'
 {sprintf} = require 'sprintf'
 fs = require 'fs'
 path = require 'path'
+{File} = require 'file-utils'
 {ServerFactory} = require '../lib_src/server-lib'
 {LocaleTempFileRepository} = require '../lib_src/tempfile-repo-lib'
 OptParse = require 'optparse'
+{Bot} = require '../lib_src/bot'
 
 LOGGING = true
 JenkinsServer.LOGGING = LOGGING
@@ -27,6 +28,7 @@ Switches = [
   [ '-u', "--jenkins-url URL", "Jenkins server url" ]
   [ '-j', "--jenkins-job job/type", 'A job in the format "job[/type]". This can be list of comma separated list. "type" has the default "lastBuild" and can have the following jenkins types: lastBuild, lastStableBuild, lastSuccessfulBuild, lstFailedBuild, lastUnsuccessfulBuild' ]
   [ '-t', "--text-file filename", "Specify a path to an alternative JSON file with texts." ]
+  [ '-p', "--plugins name", "Specify a plugin by its name. This can be a list of comma separated list." ]
 ]
 
 Options =
@@ -36,6 +38,7 @@ Options =
   'jenkins-job' : []
   'text-voice' : 'Alex'
   'text-file' : __dirname + '/texts.json'
+  'plugins' : []
 
 Parser = new OptParse.OptionParser Switches
 Parser.banner = "Usage jenkins-watcher [options]"
@@ -67,6 +70,10 @@ Parser.on "jenkins-job", (opt, value) ->
       name : parts[0]
       type : if parts.length < 2 then 'lastBuild' else parts[1]
 
+Parser.on "plugins", (opt, value) ->
+  return unless value?.split(',').length
+  for pluginId in value.split(',')
+    Options['plugins'].push pluginId
 
 Parser.on "text-file", (opt, value) ->
   Options['text-file'] = value
@@ -100,9 +107,7 @@ class AudioShadowSpeaker
 
   remoteSay : null
 
-  playLocale : false
-
-  constructor : (@playLocale, remotes) ->
+  constructor : (remotes) ->
     @fileRepository = new LocaleTempFileRepository()
     @remoteSay = new Say()
     for remote in remotes
@@ -112,12 +117,10 @@ class AudioShadowSpeaker
   text2speech : (text, voice = Options['text-voice']) ->
     params = text : text, voice : voice
     done = (fileName) =>
-      debugger
       console.info "AudioShadowSpeaker.text2speech >> Audio file created and copied: #{fileName}"
       @fileRepository.add fileName
-      if @playLocale
-        if LOGGING then console.log "Playing audio file locally.."
-        exec "afplay #{fileName}", -> exec "rm #{fileName}"
+      path = new File("../#{fileName}").getAbsolutePath()
+      JenkinsEmitter.emit 'audio.create', path
     fail = ->
       console.warn arguments
       process.exitCode 1
@@ -130,7 +133,7 @@ class AudioShadowSpeaker
   getAudioFile : (fileName) ->
     @fileRepository.get fileName
 
-speaker = new AudioShadowSpeaker(false, Options.remote)
+speaker = new AudioShadowSpeaker(Options.remote)
 
 # Check that at least a server and one job was defined.
 if !Options['jenkins-url'] || !Options['jenkins-job']?.length
@@ -191,6 +194,9 @@ else
 ### Main ###
 
 JenkinsServer.setUrl(Options['jenkins-url'])
+
+bot = new Bot(JenkinsEmitter)
+bot.loadPlugins Options.plugins
 
 Q.ncall(fs.readFile, null, Options['text-file'], 'utf8').then(((data) ->
   console.log 'Texts loaded from file ' + Options['text-file']
