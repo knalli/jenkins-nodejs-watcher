@@ -3,3 +3,4 @@ src.iml
 lib
 node_modules
 test
+bin/main.js

@@ -1,7 +1,7 @@
 console = require 'console'
 sys = require 'sys'
-exec = require('child_process').exec
-File = require('file-utils').File
+{exec} = require 'child_process'
+{File} = require 'file-utils'
 Q = require 'q'
 
 puts = (error, stdout, stderr) -> sys.puts stdout
@@ -9,26 +9,26 @@ puts = (error, stdout, stderr) -> sys.puts stdout
 
 class Say
 
-  @LOGGING: false
+  @LOGGING : false
 
-  constructor    : (@remotes = []) ->
+  constructor : (@remotes = []) ->
 
-  @randomFileName: (extension = 'wave') ->
+  @randomFileName : (extension = 'wave') ->
     "random-audio-file-#{Math.round(Math.random() * 1000000)}.#{extension}"
 
   @escapeForShell = (line) ->
     '"' + line.replace(/(["\s'$`\\])/g, '\\$1') + '"'
 
-  addRemote: (host, user, password = null) ->
+  addRemote : (host, user, password = null) ->
     @remotes.push
-      host    : host
-      user    : user
-      password: if password then password
+      host : host
+      user : user
+      password : if password then password
 
-  getRemotes: ->
+  getRemotes : ->
     @remotes.slice 0
 
-  convert: (options) ->
+  convert : (options) ->
     deferred = Q.defer()
     if @remotes[0]
       @convertWithAvailableRemote 0, deferred, options
@@ -36,7 +36,7 @@ class Say
       deferred.reject 'No remotes defined.'
     deferred.promise
 
-  convertWithAvailableRemote: (remoteIdx, deferred, options, errorMessage) ->
+  convertWithAvailableRemote : (remoteIdx, deferred, options, errorMessage) ->
     unless @remotes[remoteIdx]
       deferred.reject "No remote is left: #{errorMessage}"
     else
@@ -49,7 +49,7 @@ class Say
       ))
     deferred
 
-  convertWithRemote: (remoteIdx, options) ->
+  convertWithRemote : (remoteIdx, options) ->
     deferred = Q.defer()
 
     remote = @remotes[remoteIdx]
@@ -72,19 +72,19 @@ class Say
 
     deferred.promise
 
-  @buildRemoteHostAvailabilityCommand: (remote) ->
+  @buildRemoteHostAvailabilityCommand : (remote) ->
     "ping -c1 #{remote.host}"
 
-  @buildSayCommand: (fileName, options) ->
+  @buildSayCommand : (fileName, options) ->
     "say -o #{fileName} -v #{options.voice} \"#{Say.escapeForShell(options.text)}\""
 
-  @buildSshWithExecCommand: (remote, commandLine) ->
+  @buildSshWithExecCommand : (remote, commandLine) ->
     "ssh #{remote.user}@#{remote.host} -C \"#{Say.escapeForShell(commandLine)}\""
 
-  @buildScpCommand: (remote, fileName) ->
+  @buildScpCommand : (remote, fileName) ->
     "scp #{remote.user}@#{remote.host}:#{fileName} #{fileName}"
 
-  checkRemoteHostAvailability: (remote) ->
+  checkRemoteHostAvailability : (remote) ->
     command = Say.buildRemoteHostAvailabilityCommand remote
     deferred = Q.defer()
     Q.ncall(exec, null, command)
@@ -92,7 +92,7 @@ class Say
     .fail((error) -> deferred.reject error)
     deferred.promise
 
-  requestConvert: (remote, fileName, options) ->
+  requestConvert : (remote, fileName, options) ->
     commandLine = Say.buildSayCommand fileName, options
     command = Say.buildSshWithExecCommand remote, commandLine
     deferred = Q.defer()
@@ -101,7 +101,7 @@ class Say
     .fail((error) -> deferred.reject error)
     deferred.promise
 
-  remoteCopy: (remote, fileName) ->
+  remoteCopy : (remote, fileName) ->
     command = Say.buildScpCommand remote, fileName
     deferred = Q.defer()
     Q.ncall(exec, null, command)
@@ -109,7 +109,7 @@ class Say
     .fail((error) -> deferred.reject error)
     deferred.promise
 
-  remoteDelete: (remote, fileName) ->
+  remoteDelete : (remote, fileName) ->
     command = Say.buildSshWithExecCommand remote, "rm #{fileName}"
     deferred = Q.defer()
     Q.ncall(exec, null, command)

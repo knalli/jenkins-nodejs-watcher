@@ -2,36 +2,36 @@ LOGGING = true
 
 console = require 'console'
 sys = require 'sys'
-exec = require('child_process').exec
+{exec} = require 'child_process'
 request = require 'request'
 http = require 'http'
-File = require('file-utils').File
+{File} = require 'file-utils'
 Q = require 'q'
-EventEmitter2 = require('eventemitter2').EventEmitter2
+{EventEmitter2} = require 'eventemitter2'
 
 puts = (error, stdout, stderr) -> sys.puts stdout
 
 
-emitter = new EventEmitter2
-  wildcard    : true
-  delimiter   : '.'
-  maxListeners: 20
+Emitter = new EventEmitter2
+  wildcard : true
+  delimiter : '.'
+  maxListeners : 20
 
 
 JobState = {}
 
 
-class Server
+class ServerImpl
 
-  @LOGGING: false
+  @LOGGING : false
 
-  constructor: (@serverUrl = '', @jobName = null) ->
+  setUrl : (@serverUrl = '', @jobName = null) ->
     unless @serverUrl.substring(@serverUrl.length - 1, 1) is '/'
       @serverUrl += '/'
 
-  getLastStableBuild: (jobName = null) -> @getJobBuildNumberByType 'lastStableBuild', jobName
+  getLastStableBuild : (jobName = null) -> @getJobBuildNumberByType 'lastStableBuild', jobName
 
-  getJobBuildNumberByType: (state, jobName = @jobName) ->
+  getJobBuildNumberByType : (state, jobName = @jobName) ->
     url = "#{@serverUrl}job/#{jobName}/#{state}/api/json"
     deferred = Q.defer()
     @request(url).then((
@@ -40,21 +40,21 @@ class Server
         if responseJson.number
           deferred.resolve
             requestUrl : url
-            buildNumber: responseJson.number
+            buildNumber : responseJson.number
         else
           deferred.reject
             requestUrl : url
-            buildNumber: 0
+            buildNumber : 0
     ), (
       (responseJson) ->
         deferred.reject
-          requestUrl: url
-          message   : responseJson.message
-          statusCode: responseJson.statusCode
+          requestUrl : url
+          message : responseJson.message
+          statusCode : responseJson.statusCode
     ))
     deferred.promise
 
-  getBuildState: (type = 'lastBuild', jobName = @jobName) ->
+  getBuildState : (type = 'lastBuild', jobName = @jobName) ->
     url = "#{@serverUrl}job/#{jobName}/#{type}/api/json"
     deferred = Q.defer()
     @request(url).then((
@@ -62,48 +62,48 @@ class Server
         oldResult = JobState[jobName]
         if responseJson.number
           newResult =
-            jobName       : jobName
-            requestUrl    : url
-            buildNumber   : responseJson.number
-            result        : responseJson.result
-            oldBuildNumber: oldResult?.buildNumber
-            oldResult     : oldResult?.result
+            jobName : jobName
+            requestUrl : url
+            buildNumber : responseJson.number
+            result : responseJson.result
+            oldBuildNumber : oldResult?.buildNumber
+            oldResult : oldResult?.result
           JobState[jobName] = newResult
           deferred.resolve newResult
         else
           newResult =
-            jobName       : jobName
-            requestUrl    : url
-            buildNumber   : 0
-            result        : 'UNKNOWN'
-            oldBuildNumber: oldResult?.buildNumber
-            oldResult     : oldResult?.result
+            jobName : jobName
+            requestUrl : url
+            buildNumber : 0
+            result : 'UNKNOWN'
+            oldBuildNumber : oldResult?.buildNumber
+            oldResult : oldResult?.result
           JobState[jobName] = newResult
           deferred.reject newResult
     ), (
       (responseJson) =>
         oldResult = JobState[jobName]
         newResult =
-          jobName   : jobName
-          requestUrl: url
-          message   : responseJson.message
-          statusCode: responseJson.statusCode
+          jobName : jobName
+          requestUrl : url
+          message : responseJson.message
+          statusCode : responseJson.statusCode
         JobState[jobName] = newResult
         deferred.reject newResult
     ))
     deferred.promise
 
-  registerBuildStateEvent: (type = 'lastBuild', jobName = @jobName, interval = 30) ->
+  registerBuildStateEvent : (type = 'lastBuild', jobName = @jobName, interval = 30) ->
     onDone = (result) =>
-      emitter.emit 'job.refresh', result
+      Emitter.emit 'job.refresh', result
       if result.result isnt result.oldResult
-        emitter.emit 'job.result', result
+        Emitter.emit 'job.result', result
         if result.oldResult
-          emitter.emit 'job.result.update', result.result, jobName, result.buildNumber
+          Emitter.emit 'job.result.update', result.result, jobName, result.buildNumber
         else
-          emitter.emit 'job.result.add', result.result, jobName, result.buildNumber
+          Emitter.emit 'job.result.add', result.result, jobName, result.buildNumber
     onFail = (message) =>
-      emitter.emit 'jenkinsServer.error', message
+      Emitter.emit 'jenkinsServer.error', message
     fn = =>
       if @LOGGING then console.log "LOG :: getBuildState('#{type}', '#{jobName}')"
       @getBuildState(type, jobName).then(onDone, onFail)
@@ -112,10 +112,10 @@ class Server
     fn()
     return obj
 
-  deregister: (intervalObj) ->
+  deregister : (intervalObj) ->
     clearInterval intervalObj
 
-  request: (url) ->
+  request : (url) ->
     deferred = Q.defer()
 
     onDone = (response) ->
@@ -123,20 +123,20 @@ class Server
         deferred.resolve JSON.parse response[1]
       else
         deferred.reject
-          statusCode: response[0].statusCode
-          message   : 'Not available'
+          statusCode : response[0].statusCode
+          message : 'Not available'
     onFail = (response) ->
       deferred.reject
-        message: response.toString()
+        message : response.toString()
 
     config =
-      method            : 'GET'
-      url               : url
-      followAllRedirects: true
+      method : 'GET'
+      url : url
+      followAllRedirects : true
     Q.ncall(request, null, config).then(onDone, onFail)
 
     deferred.promise
 
 
-exports.Server = Server
-exports.emitter = emitter
+exports.JenkinsServer = new ServerImpl
+exports.JenkinsEmitter = Emitter
