@@ -2,7 +2,7 @@ class Bot
 
   loggingEnabled : false
 
-  constructor : (@emitter)->
+  constructor : (@emitter, @options)->
     @init()
 
   isLoggingEnabled : -> @loggingEnabled
@@ -25,7 +25,7 @@ class Bot
   loadPlugin : (pluginId) ->
     pluginPath = "../plugins/#{pluginId}"
     module = require pluginPath
-    plugin = module.init @, process.argv
+    plugin = module.init @, process.argv, if @options.config then @options.plugins[pluginId]
     plugin.setLoggingEnabled @isLoggingEnabled()
     if @isLoggingEnabled() then console.log "Bot.loadPlugin #{plugin.getName()}"
     if plugin.getEventNames().length

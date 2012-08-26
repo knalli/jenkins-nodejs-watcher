@@ -5,3 +5,4 @@ test
 bin/main.js
 lib/*.js
 plugins/*.js
+config.json

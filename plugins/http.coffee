@@ -99,8 +99,12 @@ class Http extends Plugin
 exports.help = () ->
   console.log Parser.toString()
 
-exports.init = (bot, argv) ->
-  Parser.parse argv
+exports.init = (bot, argv, options) ->
+  if options
+    Plugin.copyOptions options, Options
+  else
+    Parser.parse argv
+
   plugin = new Http bot
   plugin.initServer '.', Options.publicLocalhostPort
   return plugin

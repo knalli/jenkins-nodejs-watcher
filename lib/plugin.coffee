@@ -1,5 +1,10 @@
 class Plugin
 
+  @copyOptions : (originOptions, pluginOptions) ->
+    for own key, value of pluginOptions
+      if originOptions[key] isnt undefined
+        pluginOptions[key] = originOptions[key]
+
   loggingEnabled : false
 
   constructor : (@bot) ->
