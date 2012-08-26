@@ -1,5 +1,3 @@
-LOGGING = true
-
 console = require 'console'
 sys = require 'sys'
 {exec} = require 'child_process'
@@ -23,7 +21,11 @@ JobState = {}
 
 class JenkinsServer
 
-  @LOGGING : false
+  loggingEnabled : false
+
+  isLoggingEnabled : -> @loggingEnabled
+
+  setLoggingEnabled : (@loggingEnabled) ->
 
   setUrl : (@serverUrl = '', @jobName = null) ->
     unless @serverUrl.substring(@serverUrl.length - 1, 1) is '/'
@@ -105,10 +107,10 @@ class JenkinsServer
     onFail = (message) =>
       emitter.emit 'jenkinsServer.error', message
     fn = =>
-      if @LOGGING then console.log "LOG :: getBuildState('#{type}', '#{jobName}')"
+      if @isLoggingEnabled() then console.log "LOG :: getBuildState('#{type}', '#{jobName}')"
       @getBuildState(type, jobName).then(onDone, onFail)
     obj = setInterval fn, interval * 1000
-    if @LOGGING then console.log "LOG :: New intervall installed: #{jobName}/#{type}"
+    if @isLoggingEnabled() then console.log "LOG :: New intervall installed: #{jobName}/#{type}"
     fn()
     return obj
 

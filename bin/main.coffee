@@ -14,8 +14,7 @@ OptParse = require 'optparse'
 {Bot} = require '../lib/bot'
 
 LOGGING = true
-jenkinsServer.LOGGING = LOGGING
-Say.LOGGING = LOGGING
+jenkinsServer.setLoggingEnabled LOGGING
 
 ###
 Configuration & User Options
