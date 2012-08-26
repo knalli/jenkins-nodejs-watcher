@@ -27,6 +27,8 @@ Switches = [
   [ '-r', "--remote [user[:password]@]host", "A ssh remote to connect when using the T2S api. This can be a comma separated list or multiple ones." ]
   [ '-u', "--jenkins-url URL", "Jenkins server url" ]
   [ '-j', "--jenkins-job job/type", 'A job in the format "job[/type]". This can be list of comma separated list. "type" has the default "lastBuild" and can have the following jenkins types: lastBuild, lastStableBuild, lastSuccessfulBuild, lstFailedBuild, lastUnsuccessfulBuild' ]
+  # TODO This option will be dismissed later in favor of a dedicated plugin.
+  [ '-t', "--text-voice voice", "Specify the text voice." ]
   [ '-t', "--text-file filename", "Specify a path to an alternative JSON file with texts." ]
   [ '-p', "--plugins name", "Specify a plugin by its name. This can be a list of comma separated list." ]
 ]
@@ -77,6 +79,9 @@ Parser.on "plugins", (opt, value) ->
 
 Parser.on "text-file", (opt, value) ->
   Options['text-file'] = value
+
+Parser.on "text-voice", (opt, value) ->
+  Options['text-voice'] = value
 
 Parser.on "help", (opt, value) ->
   if value
