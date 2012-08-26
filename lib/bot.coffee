@@ -27,7 +27,7 @@ class Bot
     module = require pluginPath
     plugin = module.init @, process.argv
     plugin.setLoggingEnabled @isLoggingEnabled()
-    console.log "JenkinsServer.loadPlugin #{plugin.getName()}"
+    console.log "Bot.loadPlugin #{plugin.getName()}"
     if plugin.getEventNames().length
       console.log "The plugin #{plugin.getName()} exposes following events: #{plugin.getEventNames()}"
     @plugins[pluginId] = plugin
