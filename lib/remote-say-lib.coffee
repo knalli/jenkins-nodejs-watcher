@@ -88,9 +88,7 @@ class Say
       "say -o #{fileName} -v #{options.voice} \"#{Say.escapeForShell(options.text)}\""
 
   buildSshWithExecCommand : (remote, commandLine) ->
-    cmd = "ssh #{remote.user}@#{remote.host} -C \"#{commandLine}\""
-    console.log cmd
-    cmd
+    "ssh #{remote.user}@#{remote.host} -C \"#{commandLine}\""
 
   buildScpCommand : (remote, fileName) ->
     "scp #{remote.user}@#{remote.host}:#{fileName} #{fileName}"
