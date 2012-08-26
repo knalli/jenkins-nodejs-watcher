@@ -85,7 +85,7 @@ class Say
       deleteTempCmd = "rm #{tempFile}"
       "source ~/.profile;#{sayCmd};#{ffmpegCmd};#{deleteTempCmd}"
     else
-      "say -o #{fileName} -v #{options.voice} \"#{Say.escapeForShell(options.text)}\""
+      "source ~/.profile;#{Say.escapeForShell('`which say`')} -o #{fileName} -v #{options.voice} \"#{Say.escapeForShell(options.text)}\""
 
   buildSshWithExecCommand : (remote, commandLine) ->
     "ssh #{remote.user}@#{remote.host} -C \"#{commandLine}\""
