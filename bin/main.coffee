@@ -3,7 +3,7 @@
 sys = require 'sys'
 {exec} = require 'child_process'
 Q = require 'q'
-{JenkinsServer, JenkinsEmitter} = require '../lib_src/jenkins-lib'
+{jenkinsServer, jenkinsEmitter} = require '../lib_src/jenkins-lib'
 {Say} = require '../lib_src/remote-say-lib'
 {sprintf} = require 'sprintf'
 fs = require 'fs'
@@ -15,7 +15,7 @@ OptParse = require 'optparse'
 {Bot} = require '../lib_src/bot'
 
 LOGGING = true
-JenkinsServer.LOGGING = LOGGING
+jenkinsServer.LOGGING = LOGGING
 Say.LOGGING = LOGGING
 
 ###
@@ -120,7 +120,7 @@ class AudioShadowSpeaker
       console.info "AudioShadowSpeaker.text2speech >> Audio file created and copied: #{fileName}"
       @fileRepository.add fileName
       path = new File("../#{fileName}").getAbsolutePath()
-      JenkinsEmitter.emit 'audio.create', path
+      jenkinsEmitter.emit 'audio.create', path
     fail = ->
       console.warn arguments
       process.exitCode 1
@@ -141,10 +141,10 @@ if !Options['jenkins-url'] || !Options['jenkins-job']?.length
   console.log Parser.toString()
   process.exit 1
 
-JenkinsEmitter.on 'job.refresh', (result) ->
+jenkinsEmitter.on 'job.refresh', (result) ->
   if (LOGGING) then console.log "JOB REFRESHED >> #{result.jobName} = #{result.result}"
 
-JenkinsEmitter.on 'job.result.add', (result, jobName, buildNumber) ->
+jenkinsEmitter.on 'job.result.add', (result, jobName, buildNumber) ->
   unless Options.skipFirst
     if LOGGING then console.log "JOB ADDED >> #{jobName} ##{buildNumber} = #{result}"
     text = sprintf(Labels.getRandom('onJobRegister'), jobName, buildNumber, result)
@@ -153,7 +153,7 @@ JenkinsEmitter.on 'job.result.add', (result, jobName, buildNumber) ->
   else
     if LOGGING then console.log "JOB ADDED >>Option skipFirst was enabled, so the first job state will be skipped."
 
-JenkinsEmitter.on 'job.result.update', (result, jobName, buildNumber) ->
+jenkinsEmitter.on 'job.result.update', (result, jobName, buildNumber) ->
   if LOGGING then console.log '-> job.result.update'
   text = switch result
     when 'SUCCESS', 'STABLE'
@@ -168,13 +168,13 @@ JenkinsEmitter.on 'job.result.update', (result, jobName, buildNumber) ->
   if LOGGING then console.log 'TEXT = ' + text
   speaker.text2speech text
 
-JenkinsEmitter.on 'server.down', ->
+jenkinsEmitter.on 'server.down', ->
   if LOGGING then console.log 'Server down:', arguments
   text = sprintf(Labels.getRandom('onServerDown'))
   if LOGGING then console.log 'TEXT = ' + text
   speaker.text2speech text
 
-JenkinsEmitter.on 'server.up', ->
+jenkinsEmitter.on 'server.up', ->
   if LOGGING then console.log 'Server up:', arguments
   text = sprintf(getRandomText('onServerUp'))
   if LOGGING then console.log 'TEXT = ' + text
@@ -193,9 +193,9 @@ else
 
 ### Main ###
 
-JenkinsServer.setUrl(Options['jenkins-url'])
+jenkinsServer.setUrl(Options['jenkins-url'])
 
-bot = new Bot(JenkinsEmitter)
+bot = new Bot(jenkinsEmitter)
 bot.loadPlugins Options.plugins
 
 Q.ncall(fs.readFile, null, Options['text-file'], 'utf8').then(((data) ->
@@ -210,7 +210,7 @@ Q.ncall(fs.readFile, null, Options['text-file'], 'utf8').then(((data) ->
     if success then speaker.deleteAudio localeFilePath
 
   for job in Options['jenkins-job']
-    JenkinsServer.registerBuildStateEvent job.type, job.name, 10
+    jenkinsServer.registerBuildStateEvent job.type, job.name, 10
 
 ), ( (error) ->
   sys.puts 'Could not find or read the file: ' + Options['text-file']

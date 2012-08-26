@@ -10,9 +10,8 @@ class LocaleTempFileRepository
   gc : ->
     console.log 'LocaleTempFileRepository.gc'
     now = new Date()
-    validUntil = now - 200
-    list = (id for id, item in @items when item.created < validUntil)
-    for id in list
+    validUntil = now - 60
+    for id, item in @items when item.created < validUntil
       console.log "LocaleTempFileRepository.gc >> Deleting #{@items[id].filePath}"
       new File(@items[id]).delete()
       @items[id] = null

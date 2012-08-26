@@ -12,7 +12,7 @@ Q = require 'q'
 puts = (error, stdout, stderr) -> sys.puts stdout
 
 
-Emitter = new EventEmitter2
+emitter = new EventEmitter2
   wildcard : true
   delimiter : '.'
   maxListeners : 20
@@ -21,7 +21,7 @@ Emitter = new EventEmitter2
 JobState = {}
 
 
-class ServerImpl
+class JenkinsServer
 
   @LOGGING : false
 
@@ -95,15 +95,15 @@ class ServerImpl
 
   registerBuildStateEvent : (type = 'lastBuild', jobName = @jobName, interval = 30) ->
     onDone = (result) =>
-      Emitter.emit 'job.refresh', result
+      emitter.emit 'job.refresh', result
       if result.result isnt result.oldResult
-        Emitter.emit 'job.result', result
+        emitter.emit 'job.result', result
         if result.oldResult
-          Emitter.emit 'job.result.update', result.result, jobName, result.buildNumber
+          emitter.emit 'job.result.update', result.result, jobName, result.buildNumber
         else
-          Emitter.emit 'job.result.add', result.result, jobName, result.buildNumber
+          emitter.emit 'job.result.add', result.result, jobName, result.buildNumber
     onFail = (message) =>
-      Emitter.emit 'jenkinsServer.error', message
+      emitter.emit 'jenkinsServer.error', message
     fn = =>
       if @LOGGING then console.log "LOG :: getBuildState('#{type}', '#{jobName}')"
       @getBuildState(type, jobName).then(onDone, onFail)
@@ -138,5 +138,6 @@ class ServerImpl
     deferred.promise
 
 
-exports.JenkinsServer = new ServerImpl
-exports.JenkinsEmitter = Emitter
+exports.JenkinsServer = JenkinsServer
+exports.jenkinsServer = new JenkinsServer
+exports.jenkinsEmitter = emitter
