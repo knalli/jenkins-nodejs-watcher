@@ -29,10 +29,6 @@ Switches = [
   [ '-j', "--jenkins-job job/type", 'A job in the format "job[/type]". This can be list of comma separated list. "type" has the default "lastBuild" and can have the following jenkins types: lastBuild, lastStableBuild, lastSuccessfulBuild, lstFailedBuild, lastUnsuccessfulBuild' ]
   [ '-t', "--text-file filename", "Specify a path to an alternative JSON file with texts." ]
   [ '-p', "--plugins name", "Specify a plugin by its name. This can be a list of comma separated list." ]
-  # this option will be dismissed later in favor of an plugin "http server"
-  [ '-nabaztagpln', '--nabaztag-public-localhost-name VALUE', 'Define the hostname (or addr) of this machine to allow access to the audio files. Default is "localhost".']
-  # this option will be dismissed later in favor of an plugin "http server"
-  [ '-nabaztagplp', '--nabaztag-public-localhost-port VALUE', 'Define the port of this machine to allow access to the audio files. Default is "80".']
 ]
 
 Options =
