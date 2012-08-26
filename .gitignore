@@ -1,6 +1,7 @@
 .idea
 src.iml
-lib
 node_modules
 test
 bin/main.js
+lib/*.js
+plugins/*.js

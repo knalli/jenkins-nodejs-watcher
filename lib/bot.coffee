@@ -17,7 +17,7 @@ class Bot
         @loadPlugin pluginId
 
   loadPlugin : (pluginId) ->
-    pluginPath = "../plugins_src/#{pluginId}"
+    pluginPath = "../plugins/#{pluginId}"
     module = require pluginPath
     plugin = module.init @, process.argv
     console.log "JenkinsServer.loadPlugin #{plugin.getName()}"
@@ -27,5 +27,6 @@ class Bot
     @plugins[pluginId]
 
   init : ->
+    console.log 'Bot initialized.'
 
 exports.Bot = Bot

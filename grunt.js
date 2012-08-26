@@ -7,22 +7,6 @@ module.exports = function (grunt) {
       files : [ 'test/**/*.js' ]
     },
     coffee : {
-      src0 : {
-        files : [ 'bin/main.coffee' ],
-        dest : 'bin/main.js'
-      },
-      src1 : {
-        files : [ 'lib_src/remote-say-lib.coffee' ],
-        dest : 'lib/remote-say-lib.js'
-      },
-      src2 : {
-        files : [ 'lib_src/jenkins-lib.coffee' ],
-        dest : 'lib/jenkins-lib.js'
-      },
-      src4 : {
-        files : [ 'lib_src/tempfile-repo-lib.coffee' ],
-        dest : 'lib/tempfile-repo-lib.js'
-      },
       test : {
         files : [ 'test_src/remote-say-lib_test.coffee' ],
         dest : 'test/remote-say-lib_test.js'
@@ -32,14 +16,6 @@ module.exports = function (grunt) {
       files : [ 'grunt.js' ]
     },
     watch : {
-      coffee_src : {
-        files : '<config:coffee.src.files>',
-        tasks : 'coffee:src test'
-      },
-      coffee_test : {
-        files : '<config:coffee.test.files>',
-        tasks : 'coffee:test test'
-      },
       list : {
         files : '<config:lint.files>',
         tasks : 'default'

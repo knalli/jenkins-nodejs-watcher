@@ -3,15 +3,15 @@
 sys = require 'sys'
 {exec} = require 'child_process'
 Q = require 'q'
-{jenkinsServer, jenkinsEmitter} = require '../lib_src/jenkins-lib'
-{Say} = require '../lib_src/remote-say-lib'
+{jenkinsServer, jenkinsEmitter} = require '../lib/jenkins-lib'
+{Say} = require '../lib/remote-say-lib'
 {sprintf} = require 'sprintf'
 fs = require 'fs'
 path = require 'path'
 {File} = require 'file-utils'
-{LocaleTempFileRepository} = require '../lib_src/tempfile-repo-lib'
+{LocaleTempFileRepository} = require '../lib/tempfile-repo-lib'
 OptParse = require 'optparse'
-{Bot} = require '../lib_src/bot'
+{Bot} = require '../lib/bot'
 
 LOGGING = true
 jenkinsServer.LOGGING = LOGGING
