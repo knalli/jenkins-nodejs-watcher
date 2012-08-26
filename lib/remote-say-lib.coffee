@@ -9,8 +9,6 @@ puts = (error, stdout, stderr) -> sys.puts stdout
 
 class Say
 
-  @LOGGING : false
-
   constructor : (@remotes = []) ->
 
   @randomFileName : (extension = 'wave') ->

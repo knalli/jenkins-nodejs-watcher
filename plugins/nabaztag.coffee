@@ -1,5 +1,6 @@
 OptParse = require 'optparse'
 http = require 'http'
+{Plugin} = require '../lib/plugin'
 
 Switches = [
   [ '-nabaztagat', '--nabaztag-api-token VALUE', 'The Nabaztag api token']
@@ -30,18 +31,17 @@ Parser.on "nabaztag-public-localhost-port", (opt, value) ->
   Options.publicLocalhostPort = value
 
 
-class Nabaztag
+class Nabaztag extends Plugin
 
 #intellij formatter workaround
   _ : undefined
 
-  # an instance of the bot
-  bot : null
-
   # the required api token to send messages to the rabbit
   apiToken : null
 
-  constructor : (@bot, @apiToken) ->
+  getEventNames : -> ['nabaztag.command.sent']
+
+  setApiToken : (@apiToken) ->
 
   getName : ->
     'Nabaztag'
@@ -54,6 +54,8 @@ class Nabaztag
       path : url
       method : 'GET'
     http.request(options, @onApiRequest).end()
+    @bot.getEmitter().emit 'nabaztag.command.sent', command
+    if @isLoggingEnabled() then console.log "Nabaztag.sendCommand #{command}"
     return
 
   onApiRequest : (response) -> return
@@ -77,7 +79,8 @@ class Nabaztag
 exports.init = (bot, argv) ->
   Parser.parse argv
 
-  plugin = new Nabaztag bot, Options.apiToken
+  plugin = new Nabaztag bot
+  plugin.setApiToken Options.apiToken
 
   bot.getEmitter().on 'audio.create', (filePath, fileName) ->
     plugin.onAudioCreate fileName

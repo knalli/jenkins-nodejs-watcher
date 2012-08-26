@@ -1,9 +1,7 @@
 {exec} = require 'child_process'
+{Plugin} = require '../lib/plugin'
 
-
-class Afplay
-
-  constructor : (@bot) ->
+class Afplay extends Plugin
 
   getName : ->
     'Afplay'

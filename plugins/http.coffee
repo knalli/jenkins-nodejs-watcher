@@ -2,6 +2,7 @@ http = require 'http'
 fs = require 'fs'
 path = require 'path'
 OptParse = require 'optparse'
+{Plugin} = require '../lib/plugin'
 
 ### >>> Configuration Option Parser ###
 Switches = [
@@ -33,24 +34,22 @@ class Mimetypes
     '.wave' : 'audio/wav'
     '.mp3' : 'audio/mp3'
 
-class Http
+class Http extends Plugin
 
   _ : undefined
 
   defaultMimeType : 'text/html'
 
-  constructor : (@bot) ->
-
   getName : -> 'Http'
+
+  getEventNames : -> ['http.request']
 
   afterRequest : (success, localFilePath, requestUrl, contentType) ->
     @bot.getEmitter().emit 'http.request', success, localFilePath, requestUrl, contentType
 
   # Register a new server, start it and serve to the rest of the time.
   initServer : (basePath = '.', port = 8888) ->
-    server = http.createServer (request, response) ->
-      console.log 'request starting...'
-
+    server = http.createServer (request, response) =>
       url = request.url
 
       # strip of any query string

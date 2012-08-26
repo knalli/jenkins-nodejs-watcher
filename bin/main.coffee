@@ -186,20 +186,24 @@ jenkinsEmitter.on 'server.up', ->
 ###
  Recall the current options
 ###
-console.log "Jenkins Server Url = #{Options['jenkins-url']}"
+if LOGGING then console.log "Jenkins Server Url = #{Options['jenkins-url']}"
 if Options.remote.length
-  console.log "Following #{Options.remote.length} remotes are defined:"
+  if LOGGING then console.log "Following #{Options.remote.length} remotes are defined:"
   for remote, i in Options.remote
-    console.log "  ##{i}: #{remote.host}"
+    if LOGGING then console.log "  ##{i}: #{remote.host}"
 else
-  console.log "No remote is defined."
+  console.warn "No remote is defined."
 
-### Main ###
 
-jenkinsServer.setUrl(Options['jenkins-url'])
+###
+  Main
+###
 
 bot = new Bot(jenkinsEmitter)
+bot.setLoggingEnabled LOGGING
 bot.loadPlugins Options.plugins
+
+jenkinsServer.setUrl Options['jenkins-url']
 
 Q.ncall(fs.readFile, null, Options['text-file'], 'utf8').then(((data) ->
   console.log 'Texts loaded from file ' + Options['text-file']
@@ -209,7 +213,8 @@ Q.ncall(fs.readFile, null, Options['text-file'], 'utf8').then(((data) ->
   catch exception
     sys.puts(exception)
 
-  bot.getEmitter().on 'http.request', (success, localFielPath) ->
+  bot.getEmitter().on 'http.request', (success, localeFilePath) ->
+    if LOGGING then console.log "Http.request #{localeFilePath}"
     if success then speaker.deleteAudio localeFilePath
 
   for job in Options['jenkins-job']
