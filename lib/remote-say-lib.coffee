@@ -9,7 +9,11 @@ puts = (error, stdout, stderr) -> sys.puts stdout
 
 class Say
 
+  transformToMp3 : false
+
   constructor : (@remotes = []) ->
+
+  setTransformToMp3 : (@transformToMp3) ->
 
   @randomFileName : (extension = 'wave') ->
     "random-audio-file-#{Math.round(Math.random() * 1000000)}.#{extension}"
@@ -51,7 +55,7 @@ class Say
     deferred = Q.defer()
 
     remote = @remotes[remoteIdx]
-    fileName = Say.randomFileName()
+    fileName = if @transformToMp3 then Say.randomFileName('mp3') else Say.randomFileName()
 
     onFailDoReject = (error) ->
       deferred.reject error, remoteIdx
@@ -70,20 +74,29 @@ class Say
 
     deferred.promise
 
-  @buildRemoteHostAvailabilityCommand : (remote) ->
+  buildRemoteHostAvailabilityCommand : (remote) ->
     "ping -c1 #{remote.host}"
 
-  @buildSayCommand : (fileName, options) ->
-    "say -o #{fileName} -v #{options.voice} \"#{Say.escapeForShell(options.text)}\""
+  buildSayCommand : (fileName, options) ->
+    if @transformToMp3
+      tempFile = Say.randomFileName()
+      sayCmd = "#{Say.escapeForShell('`which say`')} -o #{tempFile} -v #{options.voice} \"#{Say.escapeForShell(options.text)}\""
+      ffmpegCmd = "#{Say.escapeForShell('`which ffmpeg`')} -v -10 -loglevel quiet -i #{tempFile} -f mp3 -ac 1 -ar 44100 #{fileName}"
+      deleteTempCmd = "rm #{tempFile}"
+      "source ~/.profile;#{sayCmd};#{ffmpegCmd};#{deleteTempCmd}"
+    else
+      "say -o #{fileName} -v #{options.voice} \"#{Say.escapeForShell(options.text)}\""
 
-  @buildSshWithExecCommand : (remote, commandLine) ->
-    "ssh #{remote.user}@#{remote.host} -C \"#{Say.escapeForShell(commandLine)}\""
+  buildSshWithExecCommand : (remote, commandLine) ->
+    cmd = "ssh #{remote.user}@#{remote.host} -C \"#{commandLine}\""
+    console.log cmd
+    cmd
 
-  @buildScpCommand : (remote, fileName) ->
+  buildScpCommand : (remote, fileName) ->
     "scp #{remote.user}@#{remote.host}:#{fileName} #{fileName}"
 
   checkRemoteHostAvailability : (remote) ->
-    command = Say.buildRemoteHostAvailabilityCommand remote
+    command = @buildRemoteHostAvailabilityCommand remote
     deferred = Q.defer()
     Q.ncall(exec, null, command)
     .then((stdout, stderr) -> deferred.resolve stdout)
@@ -91,8 +104,8 @@ class Say
     deferred.promise
 
   requestConvert : (remote, fileName, options) ->
-    commandLine = Say.buildSayCommand fileName, options
-    command = Say.buildSshWithExecCommand remote, commandLine
+    commandLine = @buildSayCommand fileName, options
+    command = @buildSshWithExecCommand remote, commandLine
     deferred = Q.defer()
     Q.ncall(exec, null, command)
     .then((stdout, stderr) -> deferred.resolve stdout)
@@ -100,7 +113,7 @@ class Say
     deferred.promise
 
   remoteCopy : (remote, fileName) ->
-    command = Say.buildScpCommand remote, fileName
+    command = @buildScpCommand remote, fileName
     deferred = Q.defer()
     Q.ncall(exec, null, command)
     .then((stdout, stderr) -> deferred.resolve stdout)
@@ -108,7 +121,7 @@ class Say
     deferred.promise
 
   remoteDelete : (remote, fileName) ->
-    command = Say.buildSshWithExecCommand remote, "rm #{fileName}"
+    command = @buildSshWithExecCommand remote, "rm #{fileName}"
     deferred = Q.defer()
     Q.ncall(exec, null, command)
     .then((stdout, stderr) -> deferred.resolve stdout)

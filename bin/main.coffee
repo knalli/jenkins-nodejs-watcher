@@ -113,6 +113,7 @@ class AudioShadowSpeaker
   constructor : (remotes) ->
     @fileRepository = new LocaleTempFileRepository()
     @remoteSay = new Say()
+    @remoteSay.setTransformToMp3 true
     for remote in remotes
       if LOGGING then console.log "Registering remote #{remote.host}."
       @remoteSay.addRemote remote.host, remote.username, remote.password
