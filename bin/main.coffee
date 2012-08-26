@@ -165,7 +165,7 @@ jenkinsEmitter.on 'job.refresh', (result) ->
 jenkinsEmitter.on 'job.result.add', (result, jobName, buildNumber) ->
   unless Options.skipFirst
     if LOGGING then console.log "JOB ADDED >> #{jobName} ##{buildNumber} = #{result}"
-    text = sprintf(Labels.getRandom('onJobRegister'), jobName, buildNumber, result)
+    text = sprintf(Labels.getRandom('onJobRegister'), jobName, buildNumber, Labels.getRandom(result))
     if LOGGING then console.log "JOB ADDED >> TEXT = #{text}"
     speaker.text2speech text
   else
@@ -175,11 +175,11 @@ jenkinsEmitter.on 'job.result.update', (result, jobName, buildNumber) ->
   if LOGGING then console.log '-> job.result.update'
   text = switch result
     when 'SUCCESS', 'STABLE'
-      sprintf(Labels.getRandom('onJobSwitchedToStable'), jobName, buildNumber, result)
+      sprintf(Labels.getRandom('onJobSwitchedToStable'), jobName, buildNumber, Labels.getRandom(result))
     when 'FAILURE'
-      sprintf(Labels.getRandom('onJobSwitchedToFailure'), jobName, buildNumber, result)
+      sprintf(Labels.getRandom('onJobSwitchedToFailure'), jobName, buildNumber, Labels.getRandom(result))
     when 'UNSTABLE'
-      sprintf(Labels.getRandom('onJobSwitchedToUnstable'), jobName, buildNumber, result)
+      sprintf(Labels.getRandom('onJobSwitchedToUnstable'), jobName, buildNumber, Labels.getRandom(result))
     else
       'Undefined state for job ' + jobName
 

@@ -1,4 +1,9 @@
 {
+    "SUCCESS" : ["successful"],
+    "UNSTABLE" : ["unstable"],
+    "STABLE" : ["stable"],
+    "FAILURE" : ["failed"],
+    "UNKNOWN" : ["unknown"],
     "onServerDown" : [
         "The build server is currently not available."
     ],

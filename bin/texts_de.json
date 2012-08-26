@@ -1,4 +1,9 @@
 {
+    "SUCCESS" : ["erfolgreich"],
+    "UNSTABLE" : ["nicht stabil"],
+    "STABLE" : ["stabil"],
+    "FAILURE" : ["fehlerhaft"],
+    "UNKNOWN" : ["unbekannt"],
     "onServerDown" : [
         "Der Bild server ist nicht erreichbar!"
     ],
@@ -6,7 +11,7 @@
         "Der Bild server ist wieder erreichbar!"
     ],
     "onJobRegister" : [
-        "Der Job %1$s wurde erfolgreich zur Überwachung hinzugefügt. Die aktuelle Bild nummer ist %2$s und der Zustand ist %3$s."
+        "Der Job %1$s wurde erfolgreich zur Überwachung hinzugefügt. Das aktuelle Bild hat die Nummer %2$s und war %3$s."
     ],
     "onJobSwitchedToStable" : [
         "Der Job %1$s mit Bild %2$s arbeitet wieder in korrekten Parametern."
