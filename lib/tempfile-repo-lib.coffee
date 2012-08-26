@@ -9,12 +9,10 @@ class LocaleTempFileRepository
     setInterval (=> @gc()), 60000
 
   gc : ->
-    console.log 'LocaleTempFileRepository.gc'
     now = new Date()
     validUntil = now - 60
     for id, item of @items when item.created.getTime() < validUntil
       filePath = @items[id].filePath
-      console.log "LocaleTempFileRepository.gc >> Deleting #{filePath}..."
       @remove id
     return
 

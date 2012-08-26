@@ -13,7 +13,7 @@ path = require 'path'
 OptParse = require 'optparse'
 {Bot} = require '../lib/bot'
 
-LOGGING = true
+LOGGING = false
 jenkinsServer.setLoggingEnabled LOGGING
 
 ###
@@ -88,12 +88,12 @@ Parser.on "help", (opt, value) ->
       pluginPath = "../plugins/#{value}"
       plugin = require pluginPath
     catch exception
-      console.log "Plugin #{value} could not be found."
+      console.warn "Plugin #{value} could not be found."
     if plugin
       if plugin.help
         plugin.help()
       else
-        console.log "This plugin does not provide any help."
+        console.warn "This plugin does not provide any help."
   else
     console.log Parser.toString()
   process.exit 0
@@ -134,7 +134,7 @@ class AudioShadowSpeaker
   text2speech : (text, voice = Options['text-voice']) ->
     params = text : text, voice : voice
     done = (fileName) =>
-      console.info "AudioShadowSpeaker.text2speech >> Audio file created and copied: #{fileName}"
+      if LOGGING then console.info "AudioShadowSpeaker.text2speech >> Audio file created and copied: #{fileName}"
       @fileRepository.add fileName
       path = new File("../#{fileName}").getAbsolutePath()
       jenkinsEmitter.emit 'audio.create', path, fileName
@@ -155,7 +155,7 @@ speaker = new AudioShadowSpeaker(Options.remote)
 # Check that at least a server and one job was defined.
 if !Options['jenkins-url'] || !Options['jenkins-job']?.length
   sys.puts 'Please define a server and at least one job.'
-  console.log Parser.toString()
+  console.warn Parser.toString()
   process.exit 1
 
 jenkinsEmitter.on 'job.refresh', (result) ->
@@ -220,7 +220,7 @@ bot.loadPlugins Options.plugins
 jenkinsServer.setUrl Options['jenkins-url']
 
 Q.ncall(fs.readFile, null, Options['text-file'], 'utf8').then(((data) ->
-  console.log 'Texts loaded from file ' + Options['text-file']
+  if LOGGING then console.log 'Texts loaded from file ' + Options['text-file']
 
   try
     Labels.texts = JSON.parse(data)

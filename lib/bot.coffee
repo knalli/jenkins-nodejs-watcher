@@ -27,15 +27,15 @@ class Bot
     module = require pluginPath
     plugin = module.init @, process.argv
     plugin.setLoggingEnabled @isLoggingEnabled()
-    console.log "Bot.loadPlugin #{plugin.getName()}"
+    if @isLoggingEnabled() then console.log "Bot.loadPlugin #{plugin.getName()}"
     if plugin.getEventNames().length
-      console.log "The plugin #{plugin.getName()} exposes following events: #{plugin.getEventNames()}"
+      if @isLoggingEnabled() then console.log "The plugin #{plugin.getName()} exposes following events: #{plugin.getEventNames()}"
     @plugins[pluginId] = plugin
 
   getPlugin : (pluginId) ->
     @plugins[pluginId]
 
   init : ->
-    console.log 'Bot initialized.'
+    if @isLoggingEnabled() then console.log 'Bot initialized.'
 
 exports.Bot = Bot

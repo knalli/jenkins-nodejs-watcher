@@ -85,8 +85,6 @@ class Http extends Plugin
 
     server = server.listen port
 
-    console.log "Server running at http://127.0.0.1:#{port}/"
-
     return server
 
   getPublicPath : (localePath) ->
