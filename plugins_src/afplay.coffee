@@ -1,8 +1,9 @@
 {exec} = require 'child_process'
 
+
 class Afplay
 
-  constructor : (@scope) ->
+  constructor : (@bot) ->
 
   getName : ->
     'Afplay'
@@ -10,5 +11,15 @@ class Afplay
   onAudioCreate : (filePath) ->
     exec "afplay #{filePath}"
 
-exports.init = (scope) ->
-  new Afplay scope
+
+###
+  Exports & Plugin Interface
+###
+
+exports.init = (bot) ->
+  plugin = new Afplay bot
+
+  bot.getEmitter().on 'audio.create', (filePath) ->
+    plugin.onAudioCreate filePath
+
+  return plugin

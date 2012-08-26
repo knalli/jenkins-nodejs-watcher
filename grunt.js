@@ -19,10 +19,6 @@ module.exports = function (grunt) {
         files : [ 'lib_src/jenkins-lib.coffee' ],
         dest : 'lib/jenkins-lib.js'
       },
-      src3 : {
-        files : [ 'lib_src/server-lib.coffee' ],
-        dest : 'lib/server-lib.js'
-      },
       src4 : {
         files : [ 'lib_src/tempfile-repo-lib.coffee' ],
         dest : 'lib/tempfile-repo-lib.js'

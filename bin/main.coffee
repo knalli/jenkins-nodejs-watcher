@@ -9,7 +9,6 @@ Q = require 'q'
 fs = require 'fs'
 path = require 'path'
 {File} = require 'file-utils'
-{ServerFactory} = require '../lib_src/server-lib'
 {LocaleTempFileRepository} = require '../lib_src/tempfile-repo-lib'
 OptParse = require 'optparse'
 {Bot} = require '../lib_src/bot'
@@ -29,6 +28,10 @@ Switches = [
   [ '-j', "--jenkins-job job/type", 'A job in the format "job[/type]". This can be list of comma separated list. "type" has the default "lastBuild" and can have the following jenkins types: lastBuild, lastStableBuild, lastSuccessfulBuild, lstFailedBuild, lastUnsuccessfulBuild' ]
   [ '-t', "--text-file filename", "Specify a path to an alternative JSON file with texts." ]
   [ '-p', "--plugins name", "Specify a plugin by its name. This can be a list of comma separated list." ]
+  # this option will be dismissed later in favor of an plugin "http server"
+  [ '-nabaztagpln', '--nabaztag-public-localhost-name VALUE', 'Define the hostname (or addr) of this machine to allow access to the audio files. Default is "localhost".']
+  # this option will be dismissed later in favor of an plugin "http server"
+  [ '-nabaztagplp', '--nabaztag-public-localhost-port VALUE', 'Define the port of this machine to allow access to the audio files. Default is "80".']
 ]
 
 Options =
@@ -120,7 +123,7 @@ class AudioShadowSpeaker
       console.info "AudioShadowSpeaker.text2speech >> Audio file created and copied: #{fileName}"
       @fileRepository.add fileName
       path = new File("../#{fileName}").getAbsolutePath()
-      jenkinsEmitter.emit 'audio.create', path
+      jenkinsEmitter.emit 'audio.create', path, fileName
     fail = ->
       console.warn arguments
       process.exitCode 1
@@ -206,7 +209,7 @@ Q.ncall(fs.readFile, null, Options['text-file'], 'utf8').then(((data) ->
   catch exception
     sys.puts(exception)
 
-  ServerFactory.initServer '.', 8888, (success, localeFilePath, requestUrl) ->
+  bot.getEmitter().on 'http.request', (success, localFielPath) ->
     if success then speaker.deleteAudio localeFilePath
 
   for job in Options['jenkins-job']
