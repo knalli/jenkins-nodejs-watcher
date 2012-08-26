@@ -22,6 +22,7 @@ Configuration & User Options
 ###
 
 Switches = [
+  [ '-h', '--help plugin', 'Show this help. If a plugin is specified, the help of this plugin will be displayed.']
   [ '-l', '--skip-first BOOLEAN', 'Skip first']
   [ '-r', "--remote [user[:password]@]host", "A ssh remote to connect when using the T2S api. This can be a comma separated list or multiple ones." ]
   [ '-u', "--jenkins-url URL", "Jenkins server url" ]
@@ -82,7 +83,19 @@ Parser.on "text-file", (opt, value) ->
   Options['text-file'] = value
 
 Parser.on "help", (opt, value) ->
-  console.log Parser.toString()
+  if value
+    try
+      pluginPath = "../plugins/#{value}"
+      plugin = require pluginPath
+    catch exception
+      console.log "Plugin #{value} could not be found."
+    if plugin
+      if plugin.help
+        plugin.help()
+      else
+        console.log "This plugin does not provide any help."
+  else
+    console.log Parser.toString()
   process.exit 0
 
 Parser.parse process.argv

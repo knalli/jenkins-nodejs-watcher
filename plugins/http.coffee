@@ -98,6 +98,9 @@ class Http extends Plugin
   Exports & Plugin Interface
 ###
 
+exports.help = () ->
+  console.log Parser.toString()
+
 exports.init = (bot, argv) ->
   Parser.parse argv
   plugin = new Http bot
