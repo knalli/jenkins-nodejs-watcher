@@ -75,6 +75,8 @@ class JenkinsServer
           # If the job is currently building, we ignore the new state "BUILDING"
           if newResult.building
             newResult.result = newResult.oldResult
+          else
+            newResult.culprits = (culsprit.fullName for culprit in responseJson.culprits?)
 
           JobState[jobName] = newResult
           deferred.resolve newResult
