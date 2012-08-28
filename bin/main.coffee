@@ -16,6 +16,9 @@ OptParse = require 'optparse'
 LOGGING = false
 jenkinsServer.setLoggingEnabled LOGGING
 
+# TODO
+emitter = jenkinsEmitter
+
 ###
 Configuration & User Options
 ###
@@ -146,7 +149,7 @@ class AudioShadowSpeaker
       if LOGGING then console.info "AudioShadowSpeaker.text2speech >> Audio file created and copied: #{fileName}"
       @fileRepository.add fileName
       path = new File("../#{fileName}").getAbsolutePath()
-      jenkinsEmitter.emit 'audio.create', path, fileName
+      emitter.emit 'audio.create', path, fileName
     fail = ->
       console.warn arguments
       process.exitCode 1
@@ -196,17 +199,17 @@ readConfiguration().then((->
     process.exit 1
 
   speaker = new AudioShadowSpeaker(Options.remote)
-  bot = new Bot(jenkinsEmitter, Options)
+  bot = new Bot(emitter, Options)
   bot.setLoggingEnabled LOGGING
   pluginIds = (pluginId for pluginId, pluginConfig of Options.plugins)
   bot.loadPlugins pluginIds
 
   jenkinsServer.setUrl Options['jenkins-url']
 
-  jenkinsEmitter.on 'job.refresh', (result) ->
+  emitter.on 'job.refresh', (result) ->
     if (LOGGING) then console.log "JOB REFRESHED >> #{result.jobName} = #{result.result}"
 
-  jenkinsEmitter.on 'job.result.add', (result, jobName, buildNumber) ->
+  emitter.on 'job.result.add', (result, jobName, buildNumber) ->
     unless Options.skipFirst
       if LOGGING then console.log "JOB ADDED >> #{jobName} ##{buildNumber} = #{result}"
       text = sprintf(Labels.getRandom('onJobRegister'), PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(result))
@@ -215,7 +218,7 @@ readConfiguration().then((->
     else
       if LOGGING then console.log "JOB ADDED >>Option skipFirst was enabled, so the first job state will be skipped."
 
-  jenkinsEmitter.on 'job.result.update', (result, jobName, buildNumber) ->
+  emitter.on 'job.result.update', (result, jobName, buildNumber) ->
     if LOGGING then console.log '-> job.result.update'
     if LOGGING then console.log 'Culprits for this state: ' + result.culprits
     text = switch result
@@ -231,13 +234,13 @@ readConfiguration().then((->
     if LOGGING then console.log 'TEXT = ' + text
     speaker.text2speech text
 
-  jenkinsEmitter.on 'server.down', ->
+  emitter.on 'server.down', ->
     if LOGGING then console.log 'Server down:', arguments
     text = sprintf(Labels.getRandom('onServerDown'))
     if LOGGING then console.log 'TEXT = ' + text
     speaker.text2speech text
 
-  jenkinsEmitter.on 'server.up', ->
+  emitter.on 'server.up', ->
     if LOGGING then console.log 'Server up:', arguments
     text = sprintf(getRandomText('onServerUp'))
     if LOGGING then console.log 'TEXT = ' + text
