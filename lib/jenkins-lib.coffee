@@ -67,9 +67,15 @@ class JenkinsServer
             jobName : jobName
             requestUrl : url
             buildNumber : responseJson.number
-            result : responseJson.result
+            building : responseJson.building is true
+            result : unless responseJson.building is true then responseJson.result else 'BUILDING'
             oldBuildNumber : oldResult?.buildNumber
             oldResult : oldResult?.result
+
+          # If the job is currently building, we ignore the new state "BUILDING"
+          if newResult.building
+            newResult.result = newResult.oldResult
+
           JobState[jobName] = newResult
           deferred.resolve newResult
         else
