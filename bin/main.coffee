@@ -217,6 +217,7 @@ readConfiguration().then((->
 
   jenkinsEmitter.on 'job.result.update', (result, jobName, buildNumber) ->
     if LOGGING then console.log '-> job.result.update'
+    if LOGGING then console.log 'Culprits for this state: ' + result.culprits
     text = switch result
       when 'SUCCESS', 'STABLE'
         sprintf(Labels.getRandom('onJobSwitchedToStable'), PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(result))
