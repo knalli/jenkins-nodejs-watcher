@@ -39,33 +39,39 @@ class Bot
         @loadPlugin pluginId
     return
 
+  buildPluginOptionParser : (pluginId, pluginOptions, targetOptions) ->
+    settings = []
+
+    # Build up settings according OptParse.OptionParser constructor.
+    for own key, config of pluginOptions
+      settings.push ["-#{pluginId}#{config.alias}", "--#{pluginId}-#{key}#{if config.value then ' VALUE'}", "#{config.description || ''}"]
+      if config.default isnt undefined
+        targetOptions[key] = config.default
+    parser = new OptParse.OptionParser settings
+    parser.banner = "Usage plugin #{pluginId}"
+
+    # Build up parser callbacks.
+    for own key, config of pluginOptions
+      parser.on "#{pluginId}-#{key}", (opt, value) =>
+        parsed = if config.parse
+          config.parse.apply @, arguments
+        else
+          value
+        @logEvent 'bot', 'loadPlugin', "Setting #{pluginId}.#{key} = #{parsed}"
+        targetOptions[key] = parsed
+        return
+
+    return parser
+
   loadPlugin : (pluginId) ->
     pluginPath = "../plugins/#{pluginId}"
     module = require pluginPath
 
-    settings = []
     options = {}
 
     if module.config?.options
 
-      # Build up settings according OptParse.OptionParser constructor.
-      for own key, config of module.config.options
-        settings.push ["-#{pluginId}#{config.alias}", "--#{pluginId}-#{key}#{if config.value then ' VALUE'}", "#{config.description || ''}"]
-        if config.default isnt undefined
-          options[key] = config.default
-      parser = new OptParse.OptionParser settings
-      parser.banner = "Usage plugin #{pluginId}"
-
-      # Build up parser callbacks.
-      for own key, config of module.config.options
-        parser.on "#{pluginId}-#{key}", (opt, value) =>
-          parsed = if config.parse
-            config.parse.apply @, arguments
-          else
-            value
-          @logEvent 'bot', 'loadPlugin', "Setting #{pluginId}.#{key} = #{parsed}"
-          options[key] = parsed
-          return
+      parser = @buildPluginOptionParser pluginId, module.config.options, options
 
       # We have to build a pseudo arguments array if the config file was used.
       if @options.config
@@ -95,7 +101,18 @@ class Bot
 
   init : -> @logEvent 'bot', 'initialized'
 
-  logEvent : (plugin, event, messages...) -> @emitter.emit 'logger.event', plugin, event, messages
+  logEvent : (plugin, event, messages...) -> @emitter?.emit 'logger.event', plugin, event, messages
+
+  showPluginHelp : (pluginId) ->
+    pluginPath = "../plugins/#{pluginId}"
+    module = require pluginPath
+
+    if module
+      if module.config?.options
+        parser = @buildPluginOptionParser pluginId, module.config.options, {}
+        console.log parser.toString()
+      else
+        console.log 'No help available.'
 
 
 emitter = new EventEmitter2

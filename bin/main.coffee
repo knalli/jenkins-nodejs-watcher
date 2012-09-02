@@ -92,18 +92,13 @@ Parser.on "text-file", (opt, value) ->
 Parser.on "text-voice", (opt, value) ->
   Options['text-voice'] = value
 
-Parser.on "help", (opt, value) ->
-  if value
+Parser.on "help", (opt, pluginId) ->
+  if pluginId
     try
-      pluginPath = "../plugins/#{value}"
-      plugin = require pluginPath
+      new Bot().showPluginHelp pluginId
     catch exception
-      console.warn "Plugin #{value} could not be found."
-    if plugin
-      if plugin.help
-        plugin.help()
-      else
-        console.warn "This plugin does not provide any help."
+      console.info exception
+      console.warn "Plugin #{pluginId} could not be found."
   else
     console.log Parser.toString()
   process.exit 0
