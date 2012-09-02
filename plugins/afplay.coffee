@@ -14,8 +14,8 @@ class Afplay extends Plugin
   Exports & Plugin Interface
 ###
 
-exports.init = (bot) ->
-  plugin = new Afplay bot
+exports.init = (bot, pluginId) ->
+  plugin = new Afplay bot, pluginId
 
   bot.getEmitter().on 'audio.create', (filePath) ->
     plugin.onAudioCreate filePath

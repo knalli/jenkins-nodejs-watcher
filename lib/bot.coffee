@@ -1,3 +1,15 @@
+{EventEmitter2} = require 'eventemitter2'
+
+
+class Logger
+
+  @enabled : false
+
+  @log : (messages...) ->
+    if Logger.enabled
+      console.log messages.join ', '
+
+
 class Bot
 
   loggingEnabled : false
@@ -8,6 +20,7 @@ class Bot
   isLoggingEnabled : -> @loggingEnabled
 
   setLoggingEnabled : (@loggingEnabled) ->
+    Logger.enabled = @loggingEnabled
 
   getEmitter : -> @emitter
 
@@ -21,21 +34,35 @@ class Bot
     else
       for pluginId in pluginIds
         @loadPlugin pluginId
+    return
 
   loadPlugin : (pluginId) ->
     pluginPath = "../plugins/#{pluginId}"
     module = require pluginPath
-    plugin = module.init @, process.argv, if @options.config then @options.plugins[pluginId]
+    plugin = module.init @, pluginId, process.argv, if @options.config then @options.plugins[pluginId]
     plugin.setLoggingEnabled @isLoggingEnabled()
-    if @isLoggingEnabled() then console.log "Bot.loadPlugin #{plugin.getName()}"
     if plugin.getEventNames().length
-      if @isLoggingEnabled() then console.log "The plugin #{plugin.getName()} exposes following events: #{plugin.getEventNames()}"
+      @logEvent 'bot', 'plugin.configure', plugin.getName(), plugin.getEventNames()
     @plugins[pluginId] = plugin
+    @logEvent 'bot', 'plugin.loaded', plugin.getName()
+    return
 
   getPlugin : (pluginId) ->
     @plugins[pluginId]
 
   init : ->
-    if @isLoggingEnabled() then console.log 'Bot initialized.'
+    @logEvent 'bot', 'initialized'
+
+  logEvent : (plugin, event, messages...) ->
+    @emitter.emit 'logger.event', plugin, event, messages
+
+
+emitter = new EventEmitter2
+  wildcard : true
+  delimiter : '.'
+  maxListeners : 30
+
 
 exports.Bot = Bot
+exports.Logger = Logger
+exports.emitter = emitter

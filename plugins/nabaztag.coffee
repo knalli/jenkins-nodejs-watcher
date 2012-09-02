@@ -43,7 +43,7 @@ class Nabaztag extends Plugin
       method : 'GET'
     http.request(options, @onApiRequest).end()
     @bot.getEmitter().emit 'nabaztag.command.sent', command
-    if @isLoggingEnabled() then console.log "Nabaztag.sendCommand #{command}"
+    @log 'commandSent', command
     return
 
   onApiRequest : (response) -> return
@@ -67,13 +67,13 @@ class Nabaztag extends Plugin
 exports.help = () ->
   console.log Parser.toString()
 
-exports.init = (bot, argv, options) ->
+exports.init = (bot, pluginId, argv, options) ->
   if options
     Plugin.copyOptions options, Options
   else
     Parser.parse argv
 
-  plugin = new Nabaztag bot
+  plugin = new Nabaztag bot, pluginId
   plugin.setApiToken Options.apiToken
 
   bot.getEmitter().on 'audio.create', (filePath, fileName) ->

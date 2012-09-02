@@ -7,7 +7,11 @@ class Plugin
 
   loggingEnabled : false
 
-  constructor : (@bot) ->
+  bot : null
+
+  pluginId : null
+
+  constructor : (@bot, @pluginId) ->
 
   getName : -> 'Unknown Plugin name'
 
@@ -16,6 +20,9 @@ class Plugin
   isLoggingEnabled : -> @loggingEnabled
 
   setLoggingEnabled : (@loggingEnabled) ->
+
+  log : (event, messages...) ->
+    bot?.getEmitter()?.emit @pluginId, event, messages
 
 
 exports.Plugin = Plugin

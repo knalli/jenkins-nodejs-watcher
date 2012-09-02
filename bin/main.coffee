@@ -3,7 +3,7 @@
 sys = require 'sys'
 {exec} = require 'child_process'
 Q = require 'q'
-{jenkinsServer, jenkinsEmitter} = require '../lib/jenkins-lib'
+{JenkinsServer} = require '../lib/jenkins-lib'
 {Say} = require '../lib/remote-say-lib'
 {sprintf} = require 'sprintf'
 fs = require 'fs'
@@ -11,13 +11,15 @@ path = require 'path'
 {File} = require 'file-utils'
 {LocaleTempFileRepository} = require '../lib/tempfile-repo-lib'
 OptParse = require 'optparse'
-{Bot} = require '../lib/bot'
+{Bot, Logger, emitter} = require '../lib/bot'
+
 
 LOGGING = false
-jenkinsServer.setLoggingEnabled LOGGING
 
-# TODO
-emitter = jenkinsEmitter
+
+emitter.on 'logger.*', (plugin, event, messages...) ->
+  console.log (sprintf '%1$s %2$s %3$s', Utils.padString(plugin, 20), Utils.padString(event, 40), messages.join ', ')
+
 
 ###
 Configuration & User Options
@@ -125,6 +127,21 @@ class PhoneticHelper
       return job.soundName or jobName
     return jobName
 
+class Utils
+  @padString : (string, size, char = ' ') ->
+    if typeof string is 'number'
+      _size = size
+      size = string
+      string = _size
+    string = string.toString()
+    pad = ''
+    size = size - string.length
+    for i in [0 ... size]
+      pad += char
+    if _size
+    then pad + string
+    else string + pad
+
 class AudioShadowSpeaker
 
 # intellij coffeescript formatter workaround
@@ -142,11 +159,12 @@ class AudioShadowSpeaker
     for remote in remotes
       if LOGGING then console.log "Registering remote #{remote.host}."
       @remoteSay.addRemote remote.host, remote.username, remote.password
+      if LOGGING then console.log "Registered #{remote.host}."
 
   text2speech : (text, voice = Options['text-voice']) ->
     params = text : text, voice : voice
     done = (fileName) =>
-      if LOGGING then console.info "AudioShadowSpeaker.text2speech >> Audio file created and copied: #{fileName}"
+      emitter.emit 'logger.message', 'main', 'text2speech', "Audio file created and copied: #{fileName}"
       @fileRepository.add fileName
       path = new File("../#{fileName}").getAbsolutePath()
       emitter.emit 'audio.create', path, fileName
@@ -198,56 +216,60 @@ readConfiguration().then((->
     console.warn Parser.toString()
     process.exit 1
 
-  speaker = new AudioShadowSpeaker(Options.remote)
+  speaker = new AudioShadowSpeaker Options.remote
   bot = new Bot(emitter, Options)
   bot.setLoggingEnabled LOGGING
   pluginIds = (pluginId for pluginId, pluginConfig of Options.plugins)
   bot.loadPlugins pluginIds
 
+  jenkinsServer = new JenkinsServer emitter
+  jenkinsServer.setLoggingEnabled LOGGING
   jenkinsServer.setUrl Options['jenkins-url']
 
-  emitter.on 'job.refresh', (result) ->
-    if (LOGGING) then console.log "JOB REFRESHED >> #{result.jobName} = #{result.result}"
-
-  emitter.on 'job.result.add', (result, jobName, buildNumber) ->
+  emitter.on 'jenkins.job.added', (result) ->
+    {jobName, buildNumber, status} = result
     unless Options.skipFirst
-      if LOGGING then console.log "JOB ADDED >> #{jobName} ##{buildNumber} = #{result}"
-      text = sprintf(Labels.getRandom('onJobRegister'), PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(result))
-      if LOGGING then console.log "JOB ADDED >> TEXT = #{text}"
+      text = sprintf(Labels.getRandom('onJobRegister'), PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(status))
+      emitter.emit 'logger.message', 'main', 'labels', text
       speaker.text2speech text
     else
-      if LOGGING then console.log "JOB ADDED >>Option skipFirst was enabled, so the first job state will be skipped."
+      if LOGGING then emitter.emit 'logger.message', 'main', 'run', 'Option skipFirst was enabled, so the first job state will be skipped.'
 
-  emitter.on 'job.result.update', (result, jobName, buildNumber) ->
-    if LOGGING then console.log '-> job.result.update'
-    if LOGGING then console.log 'Culprits for this state: ' + result.culprits
-    text = switch result
+  emitter.on 'jenkins.job.status.changed', (result) ->
+    {jobName, buildNumber, status, culprits} = result
+    text = switch status
       when 'SUCCESS', 'STABLE'
-        sprintf(Labels.getRandom('onJobSwitchedToStable'), PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(result))
+        sprintf(Labels.getRandom('onJobSwitchedToStable'), PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(status))
       when 'FAILURE'
-        sprintf(Labels.getRandom('onJobSwitchedToFailure'), PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(result))
+        sprintf(Labels.getRandom('onJobSwitchedToFailure'), PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(status))
       when 'UNSTABLE'
-        sprintf(Labels.getRandom('onJobSwitchedToUnstable'), PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(result))
+        sprintf(Labels.getRandom('onJobSwitchedToUnstable'), PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(status))
       else
         'Undefined state for job ' + jobName
-
-    if LOGGING then console.log 'TEXT = ' + text
+    emitter.emit 'logger.message', 'main', 'labels', text
     speaker.text2speech text
 
-  emitter.on 'server.down', ->
-    if LOGGING then console.log 'Server down:', arguments
+  emitter.on 'jenkins.job.building', (result) ->
+    text = if result.initiators?.length
+      initiator = result.initiators[0]
+      sprintf(Labels.getRandom('onJobBuildingWithCauseUser'), PhoneticHelper.improveJobName(jobName), PhoneticHelper.improveJobName(jobName))
+    else
+      sprintf(Labels.getRandom('onJobBuilding'), PhoneticHelper.improveJobName(jobName))
+    if LOGGING then console.log 'TEXT = ' +
+    speaker.text2speech text
+
+  emitter.on 'jenkins.server.down', ->
     text = sprintf(Labels.getRandom('onServerDown'))
     if LOGGING then console.log 'TEXT = ' + text
     speaker.text2speech text
 
-  emitter.on 'server.up', ->
-    if LOGGING then console.log 'Server up:', arguments
+  emitter.on 'jenkins.server.up', ->
     text = sprintf(getRandomText('onServerUp'))
     if LOGGING then console.log 'TEXT = ' + text
     speaker.text2speech text
 
   Q.ncall(fs.readFile, null, Options['text-file'], 'utf8').then(((data) ->
-    if LOGGING then console.log 'Texts loaded from file ' + Options['text-file']
+    emitter.emit 'logger.message', 'main', 'labels.loaded', Options['text-file']
 
     try
       Labels.texts = JSON.parse(data)

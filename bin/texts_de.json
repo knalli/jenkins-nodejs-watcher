@@ -21,5 +21,11 @@
     ],
     "onJobSwitchedToUnstable" : [
         "Der Job %1$s ist mit Bild %2$s nicht mehr in einem akzeptablen Zustand."
+    ],
+    "onJobBuilding" : [
+        "Für den Job %1$s wurde ein neues Bild gestartet..."
+    ],
+    "onJobBuildingWithCauseUser" : [
+        "%2$s hat für den Job %1$s ein neues Bild gestartet..."
     ]
 }

@@ -21,5 +21,11 @@
     ],
     "onJobSwitchedToUnstable" : [
         "The job %1$s switch to unstable with build %2$s."
+    ],
+    "onJobBuilding" : [
+        "The job %1$s is building now..."
+    ],
+    "onJobBuildingWithCauseUser" : [
+        "The job %1$s is building now caused by %2$s..."
     ]
 }

@@ -51,6 +51,7 @@ class Http extends Plugin
   initServer : (basePath = '.', port = 8888) ->
     server = http.createServer (request, response) =>
       url = request.url
+      @log 'request', url
 
       # strip of any query string
       if url.indexOf('?') isnt -1
@@ -84,6 +85,7 @@ class Http extends Plugin
         return
 
     server = server.listen port
+    @log 'started', @getPublicPath ''
 
     return server
 
@@ -99,12 +101,12 @@ class Http extends Plugin
 exports.help = () ->
   console.log Parser.toString()
 
-exports.init = (bot, argv, options) ->
+exports.init = (bot, pluginId, argv, options) ->
   if options
     Plugin.copyOptions options, Options
   else
     Parser.parse argv
 
-  plugin = new Http bot
+  plugin = new Http bot, pluginId
   plugin.initServer '.', Options.publicLocalhostPort
   return plugin
