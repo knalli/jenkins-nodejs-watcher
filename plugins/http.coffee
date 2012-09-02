@@ -1,32 +1,32 @@
 http = require 'http'
 fs = require 'fs'
 path = require 'path'
-OptParse = require 'optparse'
 {Plugin} = require '../lib/plugin'
 
-### >>> Configuration Option Parser ###
-Switches = [
-  [ '-httppln', '--http-public-localhost-name VALUE', 'Define the hostname (or addr) of this machine to allow access to the files. Default is "localhost".']
-  [ '-httpplp', '--http-public-localhost-port VALUE', 'Define the port of this machine to allow access to the files. Default is "8888".']
-]
 
-Options =
-  publicLocalhostName : 'localhost'
-  publicLocalhostPort : 8888
-
-Parser = new OptParse.OptionParser Switches
-Parser.banner = "Usage of Plugin Http:"
-
-Parser.on "http-public-localhost-name", (opt, value) ->
-  Options.publicLocalhostName = value
-
-Parser.on "http-public-localhost-port", (opt, value) ->
-  Options.publicLocalhostPort = value
-### << Configuration Option Parser ###
+config =
+  options :
+    'base-path' :
+      default : '.'
+      alias : 'bp'
+      value : true
+      description : 'Base path'
+      parse : (opt, value) -> value
+    'public-localhost-name' :
+      default : 'localhost'
+      alias : 'pln'
+      value : true
+      description : 'Define the hostname (or addr) of this machine to allow access to the files. Default is "localhost".'
+      parse : (opt, value) -> value
+    'public-localhost-port' :
+      default : 8888
+      alias : 'plp'
+      value : true
+      description : 'Define the port of this machine to allow access to the files. Default is "8888".'
+      parse : (opt, value) -> value
 
 
 class Mimetypes
-
   @data :
     '.js' : 'text/javascript'
     '.json' : 'application/json'
@@ -34,8 +34,8 @@ class Mimetypes
     '.wave' : 'audio/wav'
     '.mp3' : 'audio/mp3'
 
-class Http extends Plugin
 
+class Http extends Plugin
   _ : undefined
 
   defaultMimeType : 'text/html'
@@ -48,7 +48,7 @@ class Http extends Plugin
     @bot.getEmitter().emit 'http.request', success, localFilePath, requestUrl, contentType
 
   # Register a new server, start it and serve to the rest of the time.
-  initServer : (basePath = '.', port = 8888) ->
+  initServer : () ->
     server = http.createServer (request, response) =>
       url = request.url
       @log 'request', url
@@ -57,7 +57,7 @@ class Http extends Plugin
       if url.indexOf('?') isnt -1
         url = url.substring(0, url.indexOf('?'))
 
-      filePath = basePath + url
+      filePath = @options['base-path'] + url
 
       # todo this is bullshit when basePath is flexible now
       if filePath is './'
@@ -84,29 +84,21 @@ class Http extends Plugin
           @afterRequest false, filePath, request.url, contentType
         return
 
-    server = server.listen port
+    server = server.listen @options['public-localhost-port']
     @log 'started', @getPublicPath ''
 
     return server
 
   getPublicPath : (localePath) ->
     # TODO protocol scheme
-    "http://#{Options.publicLocalhostName}:#{Options.publicLocalhostPort}/#{localePath}"
+    "http://#{@options['public-localhost-name']}:#{@options['public-localhost-port']}/#{localePath}"
 
 
-###
-  Exports & Plugin Interface
-###
+### Exports & Plugin Interface ###
 
-exports.help = () ->
-  console.log Parser.toString()
+exports.config = config
 
-exports.init = (bot, pluginId, argv, options) ->
-  if options
-    Plugin.copyOptions options, Options
-  else
-    Parser.parse argv
-
+exports.init = (bot, pluginId) ->
   plugin = new Http bot, pluginId
-  plugin.initServer '.', Options.publicLocalhostPort
+  plugin.initServer()
   return plugin

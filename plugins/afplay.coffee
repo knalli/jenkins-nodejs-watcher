@@ -1,18 +1,15 @@
 {exec} = require 'child_process'
 {Plugin} = require '../lib/plugin'
 
+
 class Afplay extends Plugin
 
-  getName : ->
-    'Afplay'
+  getName : -> 'Afplay'
 
-  onAudioCreate : (filePath) ->
-    exec "afplay #{filePath}"
+  onAudioCreate : (filePath) -> exec "afplay #{filePath}"
 
 
-###
-  Exports & Plugin Interface
-###
+### Exports & Plugin Interface ###
 
 exports.init = (bot, pluginId) ->
   plugin = new Afplay bot, pluginId

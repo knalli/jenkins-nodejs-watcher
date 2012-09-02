@@ -1,22 +1,24 @@
-OptParse = require 'optparse'
 http = require 'http'
 {Plugin} = require '../lib/plugin'
 
-Switches = [
-  [ '-nabaztagat', '--nabaztag-api-token VALUE', 'The Nabaztag api token']
-]
 
-Options =
-  apiToken : ''
-  nabaztagApiHostName : 'www.nabaztag.com'
-  nabaztagApiHostPort : 80
-
-
-Parser = new OptParse.OptionParser Switches
-Parser.banner = "Usage of Plugin Nabaztag:"
-
-Parser.on "nabaztag-api-token", (opt, value) ->
-  Options.apiToken = value
+config =
+  options :
+    'api-token' :
+      alias : 'at'
+      value : true
+      description : 'The Nabatag api token'
+      parse : (opt, value) -> value
+    'api-host-name' :
+      alias : 'hn'
+      default : 'www.nabaztag.com'
+      value : true
+      parse : (opt, value) -> value
+    'api-host-port' :
+      alias : 'hn'
+      default : 80
+      value : true
+      parse : (opt, value) -> value
 
 
 class Nabaztag extends Plugin
@@ -24,21 +26,16 @@ class Nabaztag extends Plugin
 #intellij formatter workaround
   _ : undefined
 
-  # the required api token to send messages to the rabbit
-  apiToken : null
-
   getEventNames : -> ['nabaztag.command.sent']
-
-  setApiToken : (@apiToken) ->
 
   getName : ->
     'Nabaztag'
 
   sendCommand : (command) ->
-    url = "/nabaztags/#{@apiToken}/#{command}"
+    url = "/nabaztags/#{@options['api-token']}/#{command}"
     options =
-      host : Options.nabaztagApiHostName
-      port : Options.nabaztagApiHostPort
+      host : @options['api-host-name']
+      port : @options['api-host-port']
       path : url
       method : 'GET'
     http.request(options, @onApiRequest).end()
@@ -60,21 +57,12 @@ class Nabaztag extends Plugin
       console.warn 'Plugin http is missing.'
 
 
-###
-  Exports & Plugin Interface
-###
+### Exports & Plugin Interface ###
 
-exports.help = () ->
-  console.log Parser.toString()
+exports.config = config
 
-exports.init = (bot, pluginId, argv, options) ->
-  if options
-    Plugin.copyOptions options, Options
-  else
-    Parser.parse argv
-
+exports.init = (bot, pluginId) ->
   plugin = new Nabaztag bot, pluginId
-  plugin.setApiToken Options.apiToken
 
   bot.getEmitter().on 'audio.create', (filePath, fileName) ->
     plugin.onAudioCreate fileName

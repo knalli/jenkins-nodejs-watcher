@@ -1,17 +1,15 @@
 class Plugin
 
-  @copyOptions : (originOptions, pluginOptions) ->
-    for own key, value of pluginOptions
-      if originOptions[key] isnt undefined
-        pluginOptions[key] = originOptions[key]
-
   loggingEnabled : false
 
   bot : null
 
   pluginId : null
 
+  options : null
+
   constructor : (@bot, @pluginId) ->
+    @options = {}
 
   getName : -> 'Unknown Plugin name'
 
@@ -23,6 +21,10 @@ class Plugin
 
   log : (event, messages...) ->
     bot?.getEmitter()?.emit @pluginId, event, messages
+
+  setOptions : (@options) ->
+
+  getOption : (key) -> @options[key]
 
 
 exports.Plugin = Plugin
