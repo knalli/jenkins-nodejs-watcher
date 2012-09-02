@@ -12,6 +12,17 @@ puts = (error, stdout, stderr) -> sys.puts stdout
 JobState = {}
 
 
+### helper ###
+uniqueArray = (array) ->
+  result = []
+  keys = {}
+  for value in array
+    continue if keys[value] isnt undefined
+    keys[value] = true
+    result.push value
+  return result
+
+
 class JenkinsServer
 
   loggingEnabled : false
@@ -39,9 +50,9 @@ class JenkinsServer
         buildNumber : jsonResponse.number
         status : unless jsonResponse.building is true then jsonResponse.result else 'BUILDING'
       # responsible for changes
-      result.committers = (culprit.fullName for culprit in jsonResponse.culprits when culprit.fullName)
+      result.committers = uniqueArray(culprit.fullName for culprit in jsonResponse.culprits when culprit.fullName)
       # responsible for initiating
-      result.initiators = (cause.userName for cause in (action.causes[0] for action in jsonResponse.actions when action.causes) when cause.userName)
+      result.initiators = uniqueArray(cause.userName for cause in (action.causes[0] for action in jsonResponse.actions when action.causes) when cause.userName)
     return result
 
   getLastStableBuild : (jobName = null) -> @getJobBuildNumberByType 'lastStableBuild', jobName

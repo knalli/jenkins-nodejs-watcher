@@ -118,14 +118,18 @@ class Labels
     {}
   @getRandom = (key) ->
     texts = Labels.texts[key]
+    return null unless texts?.length
     idx = Math.floor(Math.random() * texts.length)
     return texts[idx]
+  @improve : (group, value) ->
+    return Labels.getRandom("#{group}.#{value}") || value
 
 class PhoneticHelper
   @improveJobName : (jobName) ->
     for job in Options['jenkins-job'] when job.name is jobName
       return job.soundName or jobName
     return jobName
+
 
 class Utils
   @padString : (string, size, char = ' ') ->
@@ -227,23 +231,36 @@ readConfiguration().then((->
   jenkinsServer.setUrl Options['jenkins-url']
 
   emitter.on 'jenkins.job.added', (result) ->
-    {jobName, buildNumber, status} = result
-    unless Options.skipFirst
-      text = sprintf(Labels.getRandom('onJobRegister'), PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(status))
+    {jobName, buildNumber, status, committers} = result
+    committers2 = (Labels.improve('committer', committer) for committer in committers)
+    unless Options['skip-first']
+      text = if committers2.length
+        tpl = Labels.getRandom 'onJobRegisterWithCommitters'
+        sprintf tpl, PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(status), committers2.join(', ')
+      else
+        tpl = Labels.getRandom 'onJobRegister'
+        sprintf tpl, PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(status)
       emitter.emit 'logger.message', 'main', 'labels', text
       speaker.text2speech text
     else
       if LOGGING then emitter.emit 'logger.message', 'main', 'run', 'Option skipFirst was enabled, so the first job state will be skipped.'
 
   emitter.on 'jenkins.job.status.changed', (result) ->
-    {jobName, buildNumber, status, culprits} = result
+    {jobName, buildNumber, status, committers} = result
+    committers2 = (Labels.improve 'committer', committer for committer in committers)
     text = switch status
       when 'SUCCESS', 'STABLE'
         sprintf(Labels.getRandom('onJobSwitchedToStable'), PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(status))
       when 'FAILURE'
-        sprintf(Labels.getRandom('onJobSwitchedToFailure'), PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(status))
+        if committers2.length
+          sprintf(Labels.getRandom('onJobSwitchedToFailureWithCommitters'), PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(status), committers2.join ',')
+        else
+          sprintf(Labels.getRandom('onJobSwitchedToFailure'), PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(status))
       when 'UNSTABLE'
-        sprintf(Labels.getRandom('onJobSwitchedToUnstable'), PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(status))
+        if comitters2.length
+          sprintf(Labels.getRandom('onJobSwitchedToUnstableWithCommitters'), PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(status), committers2.join ',')
+        else
+          sprintf(Labels.getRandom('onJobSwitchedToUnstable'), PhoneticHelper.improveJobName(jobName), buildNumber, Labels.getRandom(status))
       else
         'Undefined state for job ' + jobName
     emitter.emit 'logger.message', 'main', 'labels', text

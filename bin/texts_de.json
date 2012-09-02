@@ -13,14 +13,23 @@
     "onJobRegister" : [
         "Der Job %1$s wurde erfolgreich zur Überwachung hinzugefügt. Das aktuelle Bild hat die Nummer %2$s und war %3$s."
     ],
+    "onJobRegisterWithCommitters" : [
+        "Der Job %1$s wurde erfolgreich zur Überwachung hinzugefügt. Das aktuelle Bild hat die Nummer %2$s und war %3$s. Letzte Verantwortung bei %4$s"
+    ],
     "onJobSwitchedToStable" : [
-        "Der Job %1$s mit Bild %2$s arbeitet wieder in korrekten Parametern."
+        "Der Job %1$s mit Bild %2$s arbeitet wieder innerhalb korrekter Parameter."
     ],
     "onJobSwitchedToFailure" : [
         "Der Job %1$s ist mit Bild %2$s jetzt volle Kanne gegen die Wand gefahren."
     ],
+    "onJobSwitchedToFailureWithCommitters" : [
+        "Der Job %1$s ist mit Bild %2$s jetzt volle Kanne gegen die Wand gefahren. Verantwortung bei %3$s"
+    ],
     "onJobSwitchedToUnstable" : [
-        "Der Job %1$s ist mit Bild %2$s nicht mehr in einem akzeptablen Zustand."
+        "Der Job %1$s ist mit Bild %2$s arbeitet nicht mehr innerhalb korrekter Parameter."
+    ],
+    "onJobSwitchedToUnstableWithCommitters" : [
+        "Der Job %1$s ist mit Bild %2$s arbeitet nicht mehr innerhalb korrekter Parameter. Verantwortung bei %3$s"
     ],
     "onJobBuilding" : [
         "Für den Job %1$s wurde ein neues Bild gestartet..."

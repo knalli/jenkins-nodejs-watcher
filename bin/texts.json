@@ -13,14 +13,23 @@
     "onJobRegister" : [
         "The job %1$s was sucessfully registered. The current build number is %2$s and the result is %3$s."
     ],
+    "onJobRegisterWithCommitters" : [
+        "The job %1$s was sucessfully registered. The current build number is %2$s and the result is %3$s. Latest comitters are: %4$s"
+    ],
     "onJobSwitchedToStable" : [
         "The job %1$s is back to normal and stable again with build %2$s."
     ],
     "onJobSwitchedToFailure" : [
         "The job %1$s just failed with build %2$s."
     ],
+    "onJobSwitchedToFailureWithCommitters" : [
+        "The job %1$s just failed with build %2$s. Committers are: %3$s"
+    ],
     "onJobSwitchedToUnstable" : [
         "The job %1$s switch to unstable with build %2$s."
+    ],
+    "onJobSwitchedToUnstableWithCommitters" : [
+        "The job %1$s switch to unstable with build %2$s. Committers are: %3$s"
     ],
     "onJobBuilding" : [
         "The job %1$s is building now..."
