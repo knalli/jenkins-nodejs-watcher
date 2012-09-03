@@ -23,13 +23,13 @@
         "The job %1$s just failed with build %2$s."
     ],
     "onJobSwitchedToFailureWithCommitters" : [
-        "The job %1$s just failed with build %2$s. Committers are: %3$s"
+        "The job %1$s just failed with build %2$s. Committers are: %4$s"
     ],
     "onJobSwitchedToUnstable" : [
         "The job %1$s switch to unstable with build %2$s."
     ],
     "onJobSwitchedToUnstableWithCommitters" : [
-        "The job %1$s switch to unstable with build %2$s. Committers are: %3$s"
+        "The job %1$s switch to unstable with build %2$s. Committers are: %4$s"
     ],
     "onJobBuilding" : [
         "The job %1$s is building now..."

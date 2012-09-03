@@ -23,13 +23,13 @@
         "Der Job %1$s ist mit Bild %2$s jetzt volle Kanne gegen die Wand gefahren."
     ],
     "onJobSwitchedToFailureWithCommitters" : [
-        "Der Job %1$s ist mit Bild %2$s jetzt volle Kanne gegen die Wand gefahren. Verantwortung bei %3$s"
+        "Der Job %1$s ist mit Bild %2$s jetzt volle Kanne gegen die Wand gefahren. Verantwortung bei %4$s"
     ],
     "onJobSwitchedToUnstable" : [
         "Der Job %1$s ist mit Bild %2$s arbeitet nicht mehr innerhalb korrekter Parameter."
     ],
     "onJobSwitchedToUnstableWithCommitters" : [
-        "Der Job %1$s ist mit Bild %2$s arbeitet nicht mehr innerhalb korrekter Parameter. Verantwortung bei %3$s"
+        "Der Job %1$s ist mit Bild %2$s arbeitet nicht mehr innerhalb korrekter Parameter. Verantwortung bei %4$s"
     ],
     "onJobBuilding" : [
         "Für den Job %1$s wurde ein neues Bild gestartet..."
