@@ -52,16 +52,19 @@ class Bot
 
     # Build up parser callbacks.
     for own key, config of pluginOptions
-      parser.on "#{pluginId}-#{key}", (opt, value) =>
-        parsed = if config.parse
-          config.parse.apply @, arguments
-        else
-          value
-        @logEvent 'bot', 'loadPlugin', "Setting #{pluginId}.#{key} = #{parsed}"
-        targetOptions[key] = parsed
-        return
+      parser.on "#{pluginId}-#{key}", @onPluginOption pluginId, key, config, targetOptions
 
     return parser
+
+  onPluginOption : (pluginId, key, config, targetOptions) ->
+    (opt, value) =>
+      parsed = if config.parse
+        config.parse.apply @, arguments
+      else
+        value
+      @logEvent 'bot', 'loadPlugin', "Setting #{pluginId}.#{key} = #{parsed}"
+      targetOptions[key] = parsed
+      return
 
   loadPlugin : (pluginId) ->
     pluginPath = "../plugins/#{pluginId}"
