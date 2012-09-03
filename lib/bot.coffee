@@ -91,6 +91,7 @@ class Bot
 
     plugin = module.init @, pluginId
     plugin.setOptions options
+    if module.run then module.run plugin
     plugin.setLoggingEnabled @isLoggingEnabled()
     if plugin.getEventNames().length
       @logEvent 'bot', 'plugin.configure', plugin.getName(), plugin.getEventNames()

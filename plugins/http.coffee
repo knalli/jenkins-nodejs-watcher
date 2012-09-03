@@ -99,6 +99,7 @@ class Http extends Plugin
 exports.config = config
 
 exports.init = (bot, pluginId) ->
-  plugin = new Http bot, pluginId
+  new Http bot, pluginId
+
+exports.run = (plugin) ->
   plugin.initServer()
-  return plugin
