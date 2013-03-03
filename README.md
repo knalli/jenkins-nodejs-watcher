@@ -1,4 +1,4 @@
-# jenkins-nodejs-watcher
+# jenkins-nodejs-watcher [![Dependency Status](https://gemnasium.com/knalli/jenkins-nodejs-watcher.png)](https://gemnasium.com/knalli/jenkins-nodejs-watcher)
 
 A command line util watching for job result actions of a Jenkins server. A job status change will be used generating an audio with OS X' _say_ command via ssh.
 
